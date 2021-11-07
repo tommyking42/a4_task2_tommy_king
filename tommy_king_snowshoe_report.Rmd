@@ -26,7 +26,9 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>%
   clean_names() %>% 
 # clean the date up using lubridate 
 mutate(date = mdy(date)) %>% 
-  mutate(year = year(date))
+  mutate(year = year(date)) %>% 
+# isolating juvenile hares 
+filter(age %in% c("j", "J")) 
 ```
 
 
@@ -84,7 +86,12 @@ hare_weights_sex <- bonanza_hares %>%
     sex %in% "f" ~ "Female", 
     sex %in% "m" ~ "Male", 
     TRUE ~ "NA"
-  ))
+  )) %>% 
+mutate(grid = case_when(
+  grid %in% "bonbs" ~ "Bonanza Black Spruce", 
+  grid %in% "bonmat" ~ "Bonanza Mature", 
+  grid %in% "bonrip" ~ "Bonanza Riparian"
+))
 ```
 
 ```{r}
@@ -94,7 +101,14 @@ ggplot(data = hare_weights_sex,
   geom_histogram(aes(fill = sex), 
                  bins = 12, 
                  color = "white") + 
-  facet_wrap(~grid)  
+  facet_wrap(~grid, scales = 'free') + 
+  labs(x = "Weight (g)", 
+       y = "Count of Hares", 
+       title = "Comparison of Hares by Sex, Weight, and Site", 
+       caption = "Figure 2: Juvenile Hare Weight Comparison by sex and site: Juvenile Hare Weight (g)
+       comparison by site and sex. There were far more female samples taken, making it appear as if 
+       the female weights are larger, however, the weights of males and females are fairly similar 
+       with means around the same place.")
   
 ```
 
