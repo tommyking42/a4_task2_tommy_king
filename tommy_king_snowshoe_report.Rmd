@@ -1,0 +1,100 @@
+---
+title: "Assignment 4 Task 2"
+author: "Tommy King"
+date: "11/7/2021"
+output: 
+  html_document: 
+    toc: yes
+    number_sections: yes
+---
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate)
+library(dplyr)
+library(kableExtra)
+
+```
+
+```{r}
+# reading in the data 
+bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>% 
+  clean_names() %>% 
+# clean the date up using lubridate 
+mutate(date = mdy(date)) %>% 
+  mutate(year = year(date))
+```
+
+
+# Introduction: 
+
+# Data and Analyses: 
+
+# Juvenile Hare Initial Investigation: 
+
+## Annual Juvenile Hare Trap Counts
+
+```{r}
+hare_trap_counts <- bonanza_hares %>% 
+  filter(age %in% c("j","J")) %>%
+  group_by(year) %>% 
+  summarize(trap_total = n())
+
+# visualization of trapped juveniles by year 
+ggplot(data = hare_trap_counts, 
+       aes(x = year, y = trap_total)) + 
+  geom_histogram(fill = "palegreen", 
+           stat  = "identity", 
+           width = 0.5) + 
+  scale_x_discrete(limit = c(1999:2012)) + 
+  theme_minimal() + 
+  labs(title = "Juvenile Hares Trapped at Bonanza Creek per Year", 
+       y = "Number of Trapped Hares", 
+       x = "Year", 
+       caption = "Figure 1: Juvenile Snowshoe Hares Trapped: Number of juvenile Snowshoe Hares
+       trapped per year at the Bonanza Creek Trapping Site from 1998 to 2012.") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) + 
+  theme(plot.title = element_text(hjust = 0, size = 20))
+```
+
+```{r, include = FALSE}
+# Creating important descriptive stats to analyze data 
+hare_traps_data <- hare_trap_counts %>% 
+  summarize(mean = round(mean(trap_total), 0), 
+            max = max(trap_total), 
+            min = min(trap_total), 
+            st_dev = sd(trap_total))
+```
+
+
+### Annual Juvenile Trapped Snowshoe Takeaways: 
+Over the years from 199 to 2012, there is a clear decline in the amount of hares trapped as depicted by our graph in Figure 1. Based on our descriptive data, the mean amount of hares trapped yearly was 32, however, that is significantly affected by our outliers in which the maximum trappings in one year was 126 while the minimum was 2. As a result, it is hard to guage whether this data is a result of less time spent in the field, less traps set out in the field, or a decline in the juvenile Snowshoe Hare population. In order to standardize this process for future analyses, the amount of traps set and time spent in the field should be constant for every year, which will allow scientists to determine whether or not the juvenile hare population is declining more accurately. 
+
+# Visualizing Juvenile Hare Weights 
+
+```{r}
+# wrangling the data to a simpler dataframe
+hare_weights_sex <- bonanza_hares %>% 
+  select(grid, sex, weight) %>% 
+  mutate(sex = case_when(
+    sex %in% "f" ~ "Female", 
+    sex %in% "m" ~ "Male", 
+    TRUE ~ "NA"
+  ))
+```
+
+```{r}
+# visualizing the data 
+ggplot(data = hare_weights_sex, 
+       aes(x = weight)) + 
+  geom_histogram(aes(fill = sex), 
+                 bins = 12, 
+                 color = "white") + 
+  facet_wrap(~grid)  
+  
+```
+
